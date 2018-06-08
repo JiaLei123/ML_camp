@@ -9,7 +9,7 @@ with net.name_scope():
     net.add(gluon.nn.Dense(28 * 28, activation="relu"))
     net.add(gluon.nn.Dense(28 * 28, activation="relu"))
     net.add(gluon.nn.Dense(28 * 28, activation="relu"))
-    net.add(gluon.nn.Dense(28 * 28, activation="relu"))
+    # net.add(gluon.nn.Dense(28 * 28, activation="relu"))
     net.add(gluon.nn.Dense(10))
 net.initialize()
 
