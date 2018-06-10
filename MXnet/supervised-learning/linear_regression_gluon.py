@@ -13,17 +13,18 @@ X = nd.random.normal(scale=1, shape=(number_example, number_inputs))
 y = nd.dot(X, true_w) + true_b
 y += 0.01 * nd.random.normal(scale=1, shape=y.shape)
 
-batch_size = 10
+batch_size = 5
 dataset = gdata.ArrayDataset(X, y)
 data_iter = gdata.DataLoader(dataset, batch_size, shuffle=True)
 
 net = nn.Sequential()
-net.add(nn.Dense(1))
+with net.name_scope():
+    net.add(nn.Dense(1))
 net.initialize()
 square_loss = gloss.L2Loss()
 trainer = gluon.Trainer(net.collect_params(), 'sgd', {'learning_rate': 0.05})
 
-num_epochs = 3
+num_epochs = 10
 for epoch in range(1, num_epochs + 1):
     for X, y in data_iter:
         with autograd.record():
