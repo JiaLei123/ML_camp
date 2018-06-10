@@ -32,11 +32,11 @@ def train_linear(num_epochs, batch_size=5):
 
 num_epochs = 10
 unit_count = 1
-train_loss_list, test_loss_list, train_acc_list, test_acc_list = train_linear(num_epochs, batch_size=5)
-train_loss_2_list, test_loss_2_list, train_acc_2_list, test_acc_2_list = train_linear(num_epochs, batch_size=10)
+train_loss_list, test_loss_list, train_acc_list, test_acc_list = train_linear(num_epochs, batch_size=2)
+train_loss_2_list, test_loss_2_list, train_acc_2_list, test_acc_2_list = train_linear(num_epochs, batch_size=50)
 show_loss_acc_for_two_model(unit_count, num_epochs,
                             train_loss_list, train_loss_2_list,
                             test_loss_list, test_loss_2_list,
                             train_acc_list, train_acc_2_list,
                             test_acc_list, test_acc_2_list,
-                            "batch size 5", "batch sieze 10")
+                            "batch size 2", "batch sieze 50")

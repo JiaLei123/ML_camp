@@ -196,10 +196,55 @@ def train(train_data, test_data, net, loss, trainer, ctx, num_epochs, print_batc
         test_acc_list.append(test_acc)
 
 
-        print("Epoch %d. Loss: %.3f, Train acc %.2f, Test acc %.2f, Time %.1f sec" % (
+        print("Epoch %d. Loss: %f, Train acc %f, Test acc %f, Time %f sec" % (
             epoch, train_loss / n, train_acc / m, test_acc, time() - start
         ))
     return train_loss_list, test_loss_list, train_acc_list, test_acc_list
+
+
+def train_1(train_data, test_data, net, loss, trainer, ctx, num_epochs, batch_size, print_batches=None):
+    """Train a network"""
+    train_loss_list = []
+    test_loss_list = []
+    train_acc_list = []
+    test_acc_list = []
+
+    print("Start training on ", ctx)
+    if isinstance(ctx, mx.Context):
+        ctx = [ctx]
+
+    for epoch in range(num_epochs):
+        train_loss = 0
+        train_acc = 0
+        if isinstance(train_data, mx.io.MXDataIter):
+            train_data.reset()
+        start = time()
+        for X, y in train_data:
+            with autograd.record():
+                output = net(X)
+                losses = loss(output, y)
+            losses.backward()
+            trainer.step(batch_size)
+            train_loss += nd.mean(losses).asscalar()
+            train_acc += accuracy(output, y)
+
+        train_loss = train_loss / len(train_data)
+        train_acc = train_acc / len(train_data)
+
+        test_loss = calculate_test_lost(test_data, loss, net)
+        test_acc = evaluate_accuracy(test_data, net)
+
+        train_loss_list.append(train_loss)
+        train_acc_list.append(train_acc)
+
+        test_loss_list.append(test_loss)
+        test_acc_list.append(test_acc)
+
+        print("Epoch %d. Loss: %f, Train acc %f, Test acc %f, Time %f sec" % (
+            epoch, train_loss, train_acc, test_acc, time() - start
+        ))
+    return train_loss_list, test_loss_list, train_acc_list, test_acc_list
+
 
 
 class Residual(nn.HybridBlock):
