@@ -43,22 +43,22 @@ def mlp(num_epochs, unit_count):
     return utils.train(train_data, test_data, net, loss, trainer, ctx, num_epochs=num_epochs)
 
 
-num_epochs = 50
+num_epochs = 20
 unit_count = 56 * 56
-train_loss_list, test_loss_list, train_acc_list, test_acc_list = cnn(num_epochs, 128)
-train_loss_2_list, test_loss_2_list, train_acc_2_list, test_acc_2_list = mlp(num_epochs, unit_count)
-
-show_loss_acc_for_two_model(unit_count, num_epochs,
-                            train_loss_list, train_loss_2_list,
-                            test_loss_list, test_loss_2_list,
-                            train_acc_list, train_acc_2_list,
-                            test_acc_list, test_acc_2_list,
-                            "cnn", "mpl")
-
-# train_loss_2_list, test_loss_2_list, train_acc_2_list, test_acc_2_list = cnn(num_epochs, unit_count)
+train_loss_list, test_loss_list, train_acc_list, test_acc_list = cnn(num_epochs, 256)
+# train_loss_2_list, test_loss_2_list, train_acc_2_list, test_acc_2_list = mlp(num_epochs, unit_count)
+#
 # show_loss_acc_for_two_model(unit_count, num_epochs,
 #                             train_loss_list, train_loss_2_list,
 #                             test_loss_list, test_loss_2_list,
 #                             train_acc_list, train_acc_2_list,
 #                             test_acc_list, test_acc_2_list,
-#                             "cnn 128 unit", "mpl 3136 unit")
+#                             "cnn", "mpl")
+
+train_loss_2_list, test_loss_2_list, train_acc_2_list, test_acc_2_list = cnn(num_epochs, unit_count)
+show_loss_acc_for_two_model(unit_count, num_epochs,
+                            train_loss_list, train_loss_2_list,
+                            test_loss_list, test_loss_2_list,
+                            train_acc_list, train_acc_2_list,
+                            test_acc_list, test_acc_2_list,
+                            "cnn 256 unit", "cnn 3316 unit")

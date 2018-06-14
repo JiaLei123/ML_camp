@@ -196,8 +196,8 @@ def train(train_data, test_data, net, loss, trainer, ctx, num_epochs, print_batc
         test_acc_list.append(test_acc)
 
 
-        print("Epoch %d. Loss: %f, Train acc %f, Test acc %f, Time %f sec" % (
-            epoch, train_loss / n, train_acc / m, test_acc, time() - start
+        print("Epoch %d. Loss: %f, Train acc %f, Test loss %f, Test acc %f, Time %f sec" % (
+            epoch, train_loss / n, train_acc / m, test_lost, test_acc, time() - start
         ))
     return train_loss_list, test_loss_list, train_acc_list, test_acc_list
 
