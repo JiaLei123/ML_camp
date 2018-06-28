@@ -26,16 +26,16 @@ def mlp(num_epochs, unit_count, hidden_layer_num=1):
     return utils.train(train_data, test_data, net, loss, trainer, ctx, num_epochs=num_epochs)
 
 
-num_epochs = 50
-unit_count = 28 * 28
-unit_count_2 = 56 * 56
+num_epochs = 30
+unit_count = 28*28
+unit_count_2 = 28*28
 
 train_loss_list, test_loss_list, train_acc_list, test_acc_list = mlp(num_epochs, unit_count)
-train_loss_2_list, test_loss_2_list, train_acc_2_list, test_acc_2_list = mlp(num_epochs, unit_count_2)
+train_loss_2_list, test_loss_2_list, train_acc_2_list, test_acc_2_list = mlp(num_epochs, unit_count_2, hidden_layer_num=2)
 
 show_loss_acc_for_two_model(unit_count, num_epochs,
                             train_loss_list, train_loss_2_list,
                             test_loss_list, test_loss_2_list,
                             train_acc_list, train_acc_2_list,
                             test_acc_list, test_acc_2_list,
-                            "cnn 784 unit", "mpl 3136 unit")
+                            "mpl 1 layer 256 unit", "mpl 4 layer 256 unit")

@@ -7,7 +7,7 @@ mpl.rcParams['figure.dpi'] = 120
 import matplotlib.pyplot as plt
 
 round_of_run = 100
-unit_count = 56*56
+unit_count = 28*28
 
 net = gluon.nn.Sequential()
 with net.name_scope():
