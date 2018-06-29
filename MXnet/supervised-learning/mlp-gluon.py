@@ -6,10 +6,15 @@ import matplotlib as mpl
 mpl.rcParams['figure.dpi'] = 120
 import matplotlib.pyplot as plt
 
-round_of_run = 100
+from mxboard import SummaryWriter
+
+sw = SummaryWriter(logdir='./logs', flush_secs=5)
+
+round_of_run = 10
 unit_count = 28*28
 
-net = gluon.nn.Sequential()
+
+net = gluon.nn.HybridSequential()
 with net.name_scope():
     net.add(gluon.nn.Dense(unit_count, activation="relu"))
     # net.add(gluon.nn.Dense(28 * 28, activation="relu"))
@@ -17,6 +22,7 @@ with net.name_scope():
     # net.add(gluon.nn.Dense(28 * 28, activation="relu"))
     net.add(gluon.nn.Dense(10))
 net.initialize()
+net.hybridize()
 
 batch_size = 256
 train_data, test_data = utils.load_data_fashion_mnist(batch_size)
@@ -28,19 +34,32 @@ test_loss_list = []
 train_acc_list = []
 test_acc_list = []
 
+params = net.collect_params()
+param_names = params.keys()
+
+global_step = 0
 for epoch in range(round_of_run):
     train_loss = 0
     train_acc = 0
-    for data, label in train_data:
+    for i, (data, label) in enumerate(train_data):
         with autograd.record():
             output = net(data)
             loss = softmax_cross_entropy(output, label)
         loss.backward()
         trainer.step(batch_size)
-
         train_loss += nd.mean(loss).asscalar()
         train_acc += utils.accuracy(output, label)
+        global_step +=1
+        sw.add_scalar(tag='cross_entropy', value=loss.mean().asscalar(), global_step=global_step)
 
+        if i == 0:
+            sw.add_image('minist_first_minibatch', data.reshape((batch_size, 1, 28, 28)), epoch)
+
+    grads = [i.grad() for i in net.collect_params().values()]
+    if epoch == 0:
+        sw.add_graph(net)
+    for i, name in enumerate(param_names):
+        sw.add_histogram(tag=name, values=grads[i], global_step=epoch, bins=1000)
     test_acc = utils.evaluate_accuracy(test_data, net)
     test_lost = utils.calculate_test_lost(test_data, softmax_cross_entropy, net)
 
@@ -50,9 +69,14 @@ for epoch in range(round_of_run):
     train_acc_list.append(train_acc / len(train_data))
     test_acc_list.append(test_acc)
 
+    sw.add_scalar(tag='accuracy_curves', value=('train_acc', train_acc), global_step=epoch)
+    sw.add_scalar(tag='accuracy_curves', value=('valid_acc', test_acc), global_step=epoch)
+
     print("Epoch %d. train Loss: %f, test Loss: %f, Train acc %f, Test acc %f" % (
         epoch, train_loss / len(train_data),  test_lost, train_acc / len(train_data), test_acc))
 
+sw.export_scalars('scalar_dict.json')
+sw.close()
 
 plt.figure()
 title = "Loss 1 layer, %d unit" % unit_count
