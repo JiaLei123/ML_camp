@@ -1,4 +1,6 @@
 from math import exp
+
+from mxboard import SummaryWriter
 from mxnet import gluon
 from mxnet import autograd
 from mxnet import nd
@@ -152,6 +154,71 @@ def calculate_test_lost(data_iterator, loss_function, net, ctx=[mx.cpu()]):
     return test_loss / len(data_iterator)
 
 
+def train_wiht_V(train_data, test_data, net, loss, trainer, ctx, num_epochs, print_batches=None, logpath="./log"):
+    """Train a network"""
+    if type(net) is not gluon.nn.HybridSequential:
+        print("net must be HybridSequential")
+        return
+    with SummaryWriter(logdir=logpath, flush_secs=5) as sw:
+        print("Start training on ", ctx)
+        if isinstance(ctx, mx.Context):
+            ctx = [ctx]
+
+        net.hybridize()
+
+        params = net.collect_params()
+        param_names = params.keys()
+
+        global_step = 0
+        for epoch in range(num_epochs):
+            train_loss, train_acc, n, m = 0.0, 0.0, 0.0, 0.0
+            if isinstance(train_data, mx.io.MXDataIter):
+                train_data.reset()
+            start = time()
+            for i, batch in enumerate(train_data):
+                data, label, batch_size = _get_batch(batch, ctx)
+                losses = []
+                with autograd.record():
+                    outputs = [net(X) for X in data]
+                    losses = [loss(yhat, y) for yhat, y in zip(outputs, label)]
+                for l in losses:
+                    l.backward()
+                train_acc += sum([(yhat.argmax(axis=1) == y).sum().asscalar()
+                                  for yhat, y in zip(outputs, label)])
+                current_loss = sum([l.sum().asscalar() for l in losses])
+                train_loss += current_loss
+                trainer.step(batch_size)
+
+                global_step += 1
+                sw.add_scalar(tag='cross_entropy', value=("Train Loss", current_loss),
+                              global_step=global_step)
+                if i == 0:
+                    sw.add_image('minist_first_minibatch', batch[0].reshape((train_data.batch_size, 1, 28, 28)), epoch)
+
+                n += batch_size
+                m += sum([y.size for y in label])
+                if print_batches and (i + 1) % print_batches == 0:
+                    print("Batch %d. Loss: %f, Train acc %f" % (
+                        n, train_loss / n, train_acc / m
+                    ))
+            # must need run forward before call add_graph
+            if epoch == 0:
+                sw.add_graph(net)
+
+            grads = [i.grad() for i in net.collect_params().values()]
+            assert len(grads) == len(param_names)
+            # logging the gradients of parameters for checking convergence
+            for i, name in enumerate(param_names):
+                sw.add_histogram(tag=name, values=grads[i], global_step=epoch, bins=1000)
+
+            test_acc = evaluate_accuracy(test_data, net, ctx)
+            print("Epoch %d. Loss: %.3f, Train acc %.2f, Test acc %.2f, Time %.1f sec" % (
+                epoch, train_loss / n, train_acc / m, test_acc, time() - start
+            ))
+            sw.add_scalar(tag='accuracy_curves', value=('train_acc', train_acc / m), global_step=epoch)
+            sw.add_scalar(tag='accuracy_curves', value=('test_acc', test_acc), global_step=epoch)
+
+
 def train(train_data, test_data, net, loss, trainer, ctx, num_epochs, print_batches=None):
     """Train a network"""
     train_loss_list = []
@@ -194,7 +261,6 @@ def train(train_data, test_data, net, loss, trainer, ctx, num_epochs, print_batc
 
         test_loss_list.append(test_lost)
         test_acc_list.append(test_acc)
-
 
         print("Epoch %d. Loss: %f, Train acc %f, Test loss %f, Test acc %f, Time %f sec" % (
             epoch, train_loss / n, train_acc / m, test_lost, test_acc, time() - start
@@ -244,7 +310,6 @@ def train_1(train_data, test_data, net, loss, trainer, ctx, num_epochs, batch_si
             epoch, train_loss, train_acc, test_acc, time() - start
         ))
     return train_loss_list, test_loss_list, train_acc_list, test_acc_list
-
 
 
 class Residual(nn.HybridBlock):
