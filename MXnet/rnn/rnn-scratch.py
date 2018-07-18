@@ -1,6 +1,9 @@
 import zipfile
 import random
 from mxnet import nd
+from mxnet import autograd
+from mxnet import gluon
+from math import exp
 
 with zipfile.ZipFile('../data/jaychou_lyrics.txt.zip', 'r') as zin:
     zin.extractall('../data/')
@@ -94,4 +97,35 @@ def rnn(inputs, stats, *params):
     return (outputs, H)
 
 
+def grad_clipping(params, theta, ctx):
+    if theta is not None:
+        norm = nd.array([0,0], ctx)
+        for p in params:
+            norm += nd.sum(p.grad **2)
+        norm = nd.sqrt(norm).asscalar()
+        if norm > theta:
+            for p in params:
+                p.grad[:] *= theta / norm
+
+def train_and_predict_rnn(rnn, is_random_iter, epochs, num_steps, hidden_dim,
+                          learning_rate, clipping_theta, batch_size,
+                          pred_period, pred_len, seqs, get_params, get_inputs,
+                          ctx, corpus_indices, idx_to_char, char_to_idx,
+                          is_lstm=False):
+    if is_random_iter:
+        data_iter = data_iter_random
+    else:
+        data_iter = data_iter_consecutive
+    params = get_params()
+
+
+
+
+def predict_run(rnn, prefix, num_chars, params, hidden_dim, ctx, idx_to_char, char_to_idx, get_inputs, is_lstm=False):
+    prefix = prefix.low()
+    state_h = nd.zeros(shape=(1, hidden_dim), ctx=ctx)
+    if is_lstm:
+        state_c = nd.zeros(shape=(1, hidden_dim), ctx=ctx)
+    output = [char_to_idx[prefix[0]]]
+    for i in range(num_chars + len(prefix)):
 
