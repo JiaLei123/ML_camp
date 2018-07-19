@@ -34,7 +34,7 @@ def data_iter_random(corpus_indices, batch_size, num_steps, ctx=None):
 
     for i in range(epoch_size):
         i = i * batch_size
-        batch_indices = example_indices[i: 1 + batch_size]
+        batch_indices = example_indices[i: i + batch_size]
         data = nd.array([_data(j * num_steps) for j in batch_indices], ctx=ctx)
         label = nd.array([_data(j * num_steps + 1) for j in batch_indices], ctx=ctx)
         yield data, label
@@ -54,8 +54,8 @@ def data_iter_consecutive(corpus_indices, batch_size, num_steps, ctx=None):
         yield data, label
 
 
-def get_inputs(X, size):
-    return [nd.one_hot(x, size) for x in X.T]
+def get_inputs(X):
+    return [nd.one_hot(x, vocab_size) for x in X.T]
 
 
 ctx = utils.try_gpu()
@@ -100,9 +100,9 @@ def rnn(inputs, stats, *params):
 
 def grad_clipping(params, theta, ctx):
     if theta is not None:
-        norm = nd.array([0,0], ctx)
+        norm = nd.array([0.0], ctx)
         for p in params:
-            norm += nd.sum(p.grad **2)
+            norm += nd.sum(p.grad ** 2)
         norm = nd.sqrt(norm).asscalar()
         if norm > theta:
             for p in params:
@@ -195,7 +195,7 @@ def predict_run(rnn, prefix, num_chars, params, hidden_dim, ctx, idx_to_char, ch
 
 epochs = 200
 num_steps = 35
-learning_rate = 0,1
+learning_rate = 0.1
 batch_size = 32
 clipping_theta = 5
 seq1 = '分开'
