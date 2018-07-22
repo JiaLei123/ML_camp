@@ -66,6 +66,7 @@ hidden_dim = 256
 num_outputs = vocab_size
 std = .01
 
+
 def get_params():
     W_xh = nd.random.normal(scale=std, shape=(num_inputs, hidden_dim), ctx=ctx)
     W_hh = nd.random.normal(scale=std, shape=(hidden_dim, hidden_dim), ctx=ctx)
@@ -108,6 +109,7 @@ def grad_clipping(params, theta, ctx):
             for p in params:
                 p.grad[:] *= theta / norm
 
+
 def train_and_predict_rnn(rnn, is_random_iter, epochs, num_steps, hidden_dim,
                           learning_rate, clipping_theta, batch_size,
                           pred_period, pred_len, seqs, get_params, get_inputs,
@@ -120,8 +122,7 @@ def train_and_predict_rnn(rnn, is_random_iter, epochs, num_steps, hidden_dim,
     params = get_params()
     softmax_cross_entropy = gluon.loss.SoftmaxCrossEntropyLoss()
 
-
-    for e in range(1, epochs +1):
+    for e in range(1, epochs + 1):
         if not is_random_iter:
             state_h = nd.zeros(shape=(batch_size, hidden_dim), ctx=ctx)
             if is_lstm:
@@ -149,13 +150,14 @@ def train_and_predict_rnn(rnn, is_random_iter, epochs, num_steps, hidden_dim,
             num_examples += loss.size
 
         if e % pred_period == 0:
-            print("Epoch %d. Preflexity %f" % (e, exp(train_loss/num_examples)))
+            print("Epoch %d. Preflexity %f" % (e, exp(train_loss / num_examples)))
 
             for seq in seqs:
                 print('-', predict_run(rnn, seq, pred_len, params,
-                      hidden_dim, ctx, idx_to_char, char_to_idx, get_inputs,
-                      is_lstm))
+                                       hidden_dim, ctx, idx_to_char, char_to_idx, get_inputs,
+                                       is_lstm))
                 print()
+
 
 def predict_run(rnn, prefix, num_chars, params, hidden_dim, ctx, idx_to_char, char_to_idx, get_inputs, is_lstm=False):
     """
@@ -172,11 +174,11 @@ def predict_run(rnn, prefix, num_chars, params, hidden_dim, ctx, idx_to_char, ch
     :param is_lstm:
     :return:
     """
-    prefix = prefix.low()
+    prefix = prefix.lower()
     state_h = nd.zeros(shape=(1, hidden_dim), ctx=ctx)
     if is_lstm:
         state_c = nd.zeros(shape=(1, hidden_dim), ctx=ctx)
-    output = [char_to_idx[prefix[0]]] #先把预设值写入output
+    output = [char_to_idx[prefix[0]]]  # 先把预设值写入output
     for i in range(num_chars + len(prefix)):
         X = nd.array([output[-1]], ctx=ctx)
         if is_lstm:
@@ -184,13 +186,12 @@ def predict_run(rnn, prefix, num_chars, params, hidden_dim, ctx, idx_to_char, ch
         else:
             Y, state_h = rnn(get_inputs(X), state_h, *params)
 
-        if i < len(prefix) -1:
-            next_input = char_to_idx[prefix[i+1]]
+        if i < len(prefix) - 1:
+            next_input = char_to_idx[prefix[i + 1]]
         else:
             next_input = int(Y[0].argmax(axis=1).asscalar())
         output.append(next_input)
     return " ".join([idx_to_char[i] for i in output])
-
 
 
 epochs = 200
