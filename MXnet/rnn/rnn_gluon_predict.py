@@ -96,7 +96,7 @@ hidden_dim = 100
 num_layers = 2
 lr = 1
 clipping_norm = 0.2
-epochs = 10
+epochs = 20
 batch_size = 32
 num_steps = 5
 dropout_rate = 0.2
@@ -190,11 +190,11 @@ def train():
                     epoch + 1, ibatch, cur_L, math.exp(cur_L)))
                 total_L = 0.0
 
-                prefix = 'talking about'
-                num_chars = 5
-                predict_words = predict_run(model, prefix, num_chars, context, corpus.dictionary.idx_to_word,
-                                            corpus.dictionary.word_to_idx)
-                print(predict_words)
+                # prefix = 'talking about'
+                # num_chars = 5
+                # predict_words = predict_run(model, prefix, num_chars, context, corpus.dictionary.idx_to_word,
+                #                             corpus.dictionary.word_to_idx)
+                # print(predict_words)
                 # model_predic(val_data)
         val_L = model_eval(val_data)
         print('[Epoch %d] time cost %.2fs, validation loss %.2f, validation '
@@ -222,8 +222,8 @@ print(corpus.train[:40])
 print(corpus.train_words[:40])
 prefix = 'talking about'
 num_chars = 5
-predict_words = predict_run(model, prefix, num_chars, context, corpus.dictionary.idx_to_word, corpus.dictionary.word_to_idx)
-print(predict_words)
+# predict_words = predict_run(model, prefix, num_chars, context, corpus.dictionary.idx_to_word, corpus.dictionary.word_to_idx)
+# print(predict_words)
 
 # model_predic(val_data)
 
