@@ -12,6 +12,7 @@ from MXnet import utils
 with zipfile.ZipFile('../data/ptb.zip', 'r') as zin:
     zin.extractall('../data/')
 
+stop_words = ["<unk>", 'N']
 
 class Dictionary(object):
     def __init__(self):
@@ -43,7 +44,8 @@ class Corpus(object):
                 words = line.split() + ['<eos>']
                 tokens += len(words)
                 for word in words:
-                    self.dictionary.add_word(word)
+                    if word not in stop_words:
+                        self.dictionary.add_word(word)
         with open(path, 'r') as f:
             indices = np.zeros((tokens,), dtype="int32")
             word_list = list()
@@ -51,9 +53,10 @@ class Corpus(object):
             for line in f:
                 words = line.split() + ['<eos>']
                 for word in words:
-                    indices[idx] = self.dictionary.word_to_idx[word]
-                    idx += 1
-                    word_list.append(word)
+                    if word not in stop_words:
+                        indices[idx] = self.dictionary.word_to_idx[word]
+                        idx += 1
+                        word_list.append(word)
         return mx.nd.array(indices, dtype='int32'), word_list
 
 
@@ -90,7 +93,7 @@ class RNNModel(gluon.Block):
         return self.rnn.begin_state(*args, **kwargs)
 
 
-model_name = 'lstm'
+model_name = 'rnn_tanh'
 embed_dim = 100
 hidden_dim = 100
 num_layers = 2
