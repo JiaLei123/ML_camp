@@ -163,7 +163,11 @@ def model_predic(data_source):
         Y, hidden = model(data, hidden)
         next_input = Y.argmax(axis=1)
         if i == 0:
-            print(next_input[:15], target[:15])
+            next_input_words = " ".join([corpus.dictionary.idx_to_word[int(j.asscalar())] for j in next_input[:15]])
+            target_words = " ".join([corpus.dictionary.idx_to_word[j.asscalar()] for j in target[:15]])
+            print("predic words")
+            print(next_input_words)
+            print(target_words)
 
 
 def train():
@@ -196,6 +200,7 @@ def train():
                 #                             corpus.dictionary.word_to_idx)
                 # print(predict_words)
                 # model_predic(val_data)
+        model_predic(val_data)
         val_L = model_eval(val_data)
         print('[Epoch %d] time cost %.2fs, validation loss %.2f, validation '
               'perplexity %.2f' % (epoch + 1, time.time() - start_time, val_L,
