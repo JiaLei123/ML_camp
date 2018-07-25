@@ -206,7 +206,7 @@ seqs = [seq1, seq2, seq3]
 
 train_and_predict_rnn(rnn=rnn, is_random_iter=True, epochs=200, num_steps=35,
                       hidden_dim=hidden_dim, learning_rate=learning_rate,
-                      clipping_theta=clipping_theta, batch_size=32, pred_period=20,
+                      clipping_theta=clipping_theta, batch_size=batch_size, pred_period=20,
                       pred_len=100, seqs=seqs, get_params=get_params,
                       get_inputs=get_inputs, ctx=ctx,
                       corpus_indices=corpus_indices, idx_to_char=idx_to_char,
