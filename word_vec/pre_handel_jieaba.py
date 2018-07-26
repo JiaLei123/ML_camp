@@ -1,10 +1,10 @@
 import jieba
 import pandas as pd
 
-filePath = 'E:\\ML_learning\\NLP_data\\corpus_1.txt'
+filePath = 'E:\\ML_learning\\NLP_data\\corpus.txt'
 fileSegWordDonePath = 'E:\\ML_learning\\NLP_data\\corpusSegDone.txt'
 fileTrainRead = pd.read_csv(filePath)
-fileTrain = pd.Series(fileTrainRead.values.reshape((-1)))
+fileTrain = pd.Series(fileTrainRead.iloc[:,0])
 f = lambda x: x[9:-11]
 fileTrain = fileTrain.apply(f)
 
