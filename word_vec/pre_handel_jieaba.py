@@ -1,16 +1,20 @@
 import jieba
+import pandas as pd
 
-filePath = 'corpus.txt'
-fileSegWordDonePath = 'corpusSegDone.txt'
-fileTrainRead = []
-with open(filePath, encoding="utf-8") as fileTrainRaw:
-    fileTrainRead = [line[9:-11] for line in fileTrainRaw.readlines()]
+filePath = 'E:\\ML_learning\\NLP_data\\corpus.txt'
+fileSegWordDonePath = 'E:\\ML_learning\\NLP_data\\corpusSegDone.txt'
+fileTrainRead = pd.read_csv(filePath)
+fileTrain = pd.Series(fileTrainRead.iloc[:,0])
+f = lambda x: x[9:-11]
+fileTrain = fileTrain.apply(f)
+
+fileTrain.dropna(how='any')
 
 fileTrainSeg = []
-# fileTrainSeg.append(" ".join(list(jieba.cut(fileTrainRead[1], cut_all=False))))
-for line in fileTrainRead:
-    fileTrainSeg.append(" ".join(list(jieba.cut(line, cut_all=False))))
+for line in fileTrain:
+    data = jieba.cut(line, cut_all=False)
+    # print(list(data))
+    fileTrainSeg.append(" ".join(list(data)))
 
-with open(fileSegWordDonePath, 'w', encoding='utf-8') as fw:
-    for line in fileTrainSeg:
-        fw.write(line + "\n")
+output_list = pd.Series(fileTrainSeg)
+output_list.to_csv(fileSegWordDonePath, encoding='utf-8')
