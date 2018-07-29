@@ -1,6 +1,5 @@
 import math
 import os
-import random
 import time
 import numpy as np
 import mxnet as mx
@@ -100,15 +99,14 @@ class RNNModel(gluon.Block):
         # emb = self.drop(inputs)
         outputs = []
         for input in inputs:
-            input_node = mx.nd.array(input)
-            step = input_node.shape[0]
-            input_node = input_node.reshape(step, 1, -1)
-            output, state = self.rnn(input_node, state)
+            step, vec_size = input.shape
+            input = input.reshape(step, 1, -1)
+            output, state = self.rnn(input, state)
             output = self.drop(output)
-            output = output[-1]
+            output = output[-1].reshape((batch_size, -1))
             outputs.append(output)
         outputs = mx.nd.concat(*outputs, dim=0)
-        decoded = self.decoder(outputs)
+        decoded = self.decoder(outputs.reshape((-1, self.hidden_dim)))
         return decoded, state
 
     def begin_state(self, *args, **kwargs):
@@ -119,41 +117,19 @@ def get_batch(source, label, i):
     target = label[i]
     return data, target
 
-def data_iter(source, target, batch_size):
-    """
-    get number_example/batch_size data list and each list has batch_size data
-    :return:
-    """
-    number_example = len(target)
-    idx = list(range(number_example))
-    random.shuffle(idx)
-
-    def _data(pos):
-        return source[pos]
-
-    def _lable(pos):
-        return target[pos]
-
-    for i in range(0, number_example, batch_size):
-        batch_indices = idx[i: min(i + batch_size, number_example)]
-
-        data = [_data(j) for j in batch_indices]
-        label = [_lable(j) for j in batch_indices]
-        yield data, label
-
 def get_data_iter(path, batch_size, w2v_vec):
     total_data = pd.read_csv(path)
-    data = total_data["article"][0:10000]
+    data = total_data["article"][0:100]
     f = lambda x: [w2v_vec.wv.get_vector(xi) for xi in x.split(" ")]
     #
     data = data.apply(f)
 
     # data = pd.read_pickle("E:\\ML_learning\\Daguan\\data\\train_data_vec.plk", "gzip")
-    label = total_data["class"][0:10000]
+    label = total_data["class"][0:100]
 
     # dataset = gdata.ArrayDataset(data, label)
     # data_iter = gdata.DataLoader(dataset, batch_size, shuffle=True)
-    return np.array(data), np.array(label)
+    return data, label
 
 
 def detach(state):
@@ -184,53 +160,55 @@ def train():
         hidden = model.begin_state(func=mx.nd.zeros, batch_size=batch_size_clas, ctx=context)
 
         batch_num = 0
-        for X, y in data_iter(train_data, label, batch_size):
-            # X, y = get_batch(train_data, label, i)
+        for X, y in train_data_iter:
+            batch_num += 1
             hidden = detach(hidden)
             with autograd.record():
                 output, hidden = model(X, hidden)
-                L = loss(output, mx.nd.array(y))
+                # output = output[-1].reshape((1, -1))
+                L = loss(output, y)
                 L.backward()
             grads = [i.grad(context) for i in model.collect_params().values()]
             gluon.utils.clip_global_norm(grads, clipping_norm * num_steps * batch_size)
             trainer.step(batch_size)
             total_L += mx.nd.sum(L).asscalar()
-            batch_num += 1
 
             if batch_num % eval_period == 0 and batch_num > 0:
                 cur_L = total_L / batch_num
-                # train_acc = evaluate_accuracy(train_data, label, model)
-                print('[Epoch %d Batch %d] loss %.2f' % (epoch + 1, batch_num, cur_L))
+                train_acc = evaluate_accuracy(train_data_iter, model)
+                print('[Epoch %d Batch %d] loss %.2f, Train acc %f' % (epoch + 1, batch_num, cur_L, train_acc))
 
-        cur_L = total_L / len(label)
-        train_acc = evaluate_accuracy(train_data, label, model)
-        print('[Epoch %d loss %.2f Train acc %f' % (epoch + 1, cur_L, train_acc))
+        cur_L = total_L / len(train_data_iter)
+        train_acc = evaluate_accuracy(train_data_iter, model)
+        print('[Epoch %d loss %.2fm Train acc %f' % (epoch + 1, cur_L, train_acc))
 
 
-# def _get_batch(batch, ctx):
-#     """return data and label on ctx"""
-#     if isinstance(batch, mx.io.DataBatch):
-#         data = batch.data[0]
-#         label = batch.label[0]
-#     else:
-#         data, label = batch
-#     return (gluon.utils.split_and_load(data, ctx),
-#             gluon.utils.split_and_load(label, ctx),
-#             data.shape[0])
+def _get_batch(batch, ctx):
+    """return data and label on ctx"""
+    if isinstance(batch, mx.io.DataBatch):
+        data = batch.data[0]
+        label = batch.label[0]
+    else:
+        data, label = batch
+    return (gluon.utils.split_and_load(data, ctx),
+            gluon.utils.split_and_load(label, ctx),
+            data.shape[0])
 
-def evaluate_accuracy(train_data, label, net, ctx=[mx.cpu()]):
+def evaluate_accuracy(data_iterator, net, ctx=[mx.cpu()]):
     if isinstance(ctx, mx.Context):
         ctx = [ctx]
     acc = mx.nd.array([0])
     n = 0.
-    for X, y in data_iter(train_data, label, batch_size):
-        # X, y = get_batch(train_data, label, i)
-        hidden = model.begin_state(func=mx.nd.zeros, batch_size=batch_size_clas, ctx=context)
-        y = mx.nd.array(y)
-        y = y.astype('float32')
-        pred, _ = net(X, hidden)
-        acc += mx.nd.sum(pred.argmax(axis=1) == y)
-        n += y.size
+    if isinstance(data_iterator, mx.io.MXDataIter):
+        data_iterator.reset()
+    for batch in data_iterator:
+        data, label, batch_size = _get_batch(batch, ctx)
+        for X, y in zip(data, label):
+            hidden = model.begin_state(func=mx.nd.zeros, batch_size=batch_size_clas, ctx=context)
+            y = y.astype('float32')
+            pred, _ = net(X, hidden)
+            acc += mx.nd.sum(pred.argmax(axis=1) == y).copyto(mx.cpu())
+            n += y.size
         acc.wait_to_read()  # don't push too many operators into backend
     return acc.asscalar() / n
 
@@ -243,19 +221,19 @@ if __name__=="__main__":
     lr = 1
     clipping_norm = 0.2
     epochs = 10
-    batch_size = 20
+    batch_size = 5
     batch_size_clas = 1
     num_steps = 1
     dropout_rate = 0.2
-    eval_period = 50
+    eval_period = 20
 
     context = utils.try_gpu()
 
     train_data_path = "E:\\ML_learning\\Daguan\\data\\train_data.csv"
     w2v = word2vec.Word2Vec.load("E:\\ML_learning\\Daguan\\data\\mymodel")
     # test_data_path = ""
-    train_data, label = get_data_iter(train_data_path, batch_size, w2v)
-    # train_data_iter = get_data_iter(train_data_path, batch_size, w2v)
+    # train_data, label = get_data_iter(train_data_path, batch_size, w2v)
+    train_data_iter = get_data_iter(train_data_path, batch_size, w2v)
 
 
     model = RNNModel(model_name, embed_dim, hidden_dim, num_layers, w2v, dropout_rate)

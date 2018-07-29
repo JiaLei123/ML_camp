@@ -9,5 +9,5 @@ train_sentences = pd.Series(fileTrainRead.iloc[:, 1])
 f = lambda x: str(x).split(" ")
 train_sentences = train_sentences.apply(f)
 
-model = word2vec.Word2Vec(train_sentences, size=300)
+model = word2vec.Word2Vec(train_sentences, size=100)
 model.save(mopdelfilePath)
