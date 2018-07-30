@@ -13,55 +13,7 @@ import pandas as pd
 import numpy as np
 
 
-class Dictionary(object):
-    def __init__(self):
-        self.word_to_idx = {}
-        self.idx_to_word = []
-
-    def add_word(self, word):
-        if word not in self.word_to_idx:
-            self.idx_to_word.append(word)
-            self.word_to_idx[word] = len(self.idx_to_word) - 1  # 就是返回word在idx_to_word中的index值
-        return self.word_to_idx[word]
-
-    def __len__(self):
-        return len(self.idx_to_word)
-
-
-class Corpus(object):
-    def __init__(self, path):
-        self.dictionary = Dictionary()
-        self.train, _train = self.tokenize(path + 'train.txt')
-        self.valid, _val = self.tokenize(path + 'valid.txt')
-        self.test, _test = self.tokenize(path + 'test.txt')
-        all_sentences = list()
-        all_sentences.extend(_train)
-        all_sentences.extend(_val)
-        all_sentences.extend(_test)
-        self.w2v = word2vec.Word2Vec(all_sentences)
-
-    def tokenize(self, path):
-        assert os.path.exists(path)
-        with open(path, 'r') as f:
-            tokens = 0
-            for line in f:
-                words = line.split() + ['<eos>']
-                tokens += len(words)
-                for word in words:
-                    self.dictionary.add_word(word)
-        with open(path, 'r') as f:
-            indices = np.zeros((tokens,), dtype="int32")
-            idx = 0
-            all_sentences = list()
-            for line in f:
-                words = line.split() + ['<eos>']
-                for word in words:
-                    indices[idx] = self.dictionary.word_to_idx[word]
-                    idx += 1
-                all_sentences.append(words)
-        return mx.nd.array(indices, dtype='int32'), all_sentences
-
-
+high_frequency_word_list = ['1044285', '7368', '856005', '72195', '195449', '359838', '239755', '427848', '316564']
 
 class RNNModel(gluon.Block):
     def __init__(self, mode, embed_dim, hidden_dim, num_layers, w2v_vec, drop_out=0.5, **kwargs):
@@ -96,8 +48,6 @@ class RNNModel(gluon.Block):
     #     return mx.nd.array(input_vec).reshape((len(inputs), 1, -1))
 
     def forward(self, inputs, state):
-        # input_node = self.get_vec(inputs)
-        # emb = self.drop(inputs)
         outputs = []
         for input in inputs:
             input_node = mx.nd.array(input)
@@ -114,10 +64,12 @@ class RNNModel(gluon.Block):
     def begin_state(self, *args, **kwargs):
         return self.rnn.begin_state(*args, **kwargs)
 
+
 def get_batch(source, label, i):
     data = source[i]
     target = label[i]
     return data, target
+
 
 def data_iter(source, target, batch_size):
     """
@@ -141,15 +93,16 @@ def data_iter(source, target, batch_size):
         label = [_lable(j) for j in batch_indices]
         yield data, label
 
+
 def get_data_iter(path, batch_size, w2v_vec):
     total_data = pd.read_csv(path)
-    data = total_data["article"][0:10000]
-    f = lambda x: [w2v_vec.wv.get_vector(xi) for xi in x.split(" ")]
+    data = total_data["article"][0:100]
+    f = lambda x: [w2v_vec.wv.get_vector(xi) for xi in x.split(" ")[0:300] if xi not in high_frequency_word_list]
+    # f = lambda x: [xi for xi in x.split(" ")[0:800] ]
     #
     data = data.apply(f)
 
-    # data = pd.read_pickle("E:\\ML_learning\\Daguan\\data\\train_data_vec.plk", "gzip")
-    label = total_data["class"][0:10000]
+    label = total_data["class"][0:100]
 
     # dataset = gdata.ArrayDataset(data, label)
     # data_iter = gdata.DataLoader(dataset, batch_size, shuffle=True)
@@ -162,19 +115,6 @@ def detach(state):
     else:
         state = state.detach()
     return state
-
-
-def model_eval(data_source):
-    total_L = 0.0
-    ntotal = 0
-    hidden = model.begin_state(func=mx.nd.zeros, batch_size=batch_size_clas, ctx=context)
-    for i in range(0, data_source.shape[0] - 1, num_steps):
-        data, target = get_batch(data_source, i)
-        output, hidden = model(data, hidden)
-        L = loss(output, target)
-        total_L += mx.nd.sum(L).asscalar()
-        ntotal += L.size
-    return total_L / ntotal
 
 
 def train():
@@ -198,7 +138,7 @@ def train():
             batch_num += 1
 
             if batch_num % eval_period == 0 and batch_num > 0:
-                cur_L = total_L / batch_num
+                cur_L = total_L / batch_num / batch_size
                 # train_acc = evaluate_accuracy(train_data, label, model)
                 print('[Epoch %d Batch %d] loss %.2f' % (epoch + 1, batch_num, cur_L))
 
@@ -206,17 +146,6 @@ def train():
         train_acc = evaluate_accuracy(train_data, label, model)
         print('[Epoch %d loss %.2f Train acc %f' % (epoch + 1, cur_L, train_acc))
 
-
-# def _get_batch(batch, ctx):
-#     """return data and label on ctx"""
-#     if isinstance(batch, mx.io.DataBatch):
-#         data = batch.data[0]
-#         label = batch.label[0]
-#     else:
-#         data, label = batch
-#     return (gluon.utils.split_and_load(data, ctx),
-#             gluon.utils.split_and_load(label, ctx),
-#             data.shape[0])
 
 def evaluate_accuracy(train_data, label, net, ctx=[mx.cpu()]):
     if isinstance(ctx, mx.Context):
@@ -232,10 +161,10 @@ def evaluate_accuracy(train_data, label, net, ctx=[mx.cpu()]):
         acc += mx.nd.sum(pred.argmax(axis=1) == y)
         n += y.size
         acc.wait_to_read()  # don't push too many operators into backend
-    return acc.asscalar() / n
+    return acc.asscalar() / len(label)
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     model_name = 'rnn_relu'
     embed_dim = 100
     hidden_dim = 100
@@ -257,15 +186,13 @@ if __name__=="__main__":
     train_data, label = get_data_iter(train_data_path, batch_size, w2v)
     # train_data_iter = get_data_iter(train_data_path, batch_size, w2v)
 
-
     model = RNNModel(model_name, embed_dim, hidden_dim, num_layers, w2v, dropout_rate)
     model.collect_params().initialize(mx.init.Xavier(), ctx=context)
 
-    trainer = gluon.Trainer(model.collect_params(), 'sgd', {'learning_rate': lr, 'momentum': 0, 'wd': 0})
+    trainer = gluon.Trainer(model.collect_params(), 'sgd', {'learning_rate': lr, 'momentum': 0.1, 'wd': 0})
     loss = gluon.loss.SoftmaxCrossEntropyLoss()
 
     # model_eval(val_data)
     train()
     # test_L = model_eval(test_data_iter)
     # print('Test loss %.2f, test perplexity %.2f' % (test_L, math.exp(test_L)))
-
