@@ -1,0 +1,110 @@
+[Epoch 1 Batch 50] loss 3.86
+[Epoch 1 Batch 100] loss 3.45
+[Epoch 1 Batch 150] loss 3.27
+[Epoch 1 Batch 200] loss 3.17
+[Epoch 1 Batch 250] loss 3.11
+[Epoch 1 Batch 300] loss 3.06
+[Epoch 1 Batch 350] loss 3.03
+[Epoch 1 Batch 400] loss 3.01
+[Epoch 1 Batch 450] loss 2.99
+[Epoch 1 Batch 500] loss 2.97
+[Epoch 1 loss 2.97 Train acc 0.108700
+[Epoch 2 Batch 50] loss 2.74
+[Epoch 2 Batch 100] loss 2.75
+[Epoch 2 Batch 150] loss 2.75
+[Epoch 2 Batch 200] loss 2.75
+[Epoch 2 Batch 250] loss 2.74
+[Epoch 2 Batch 300] loss 2.74
+[Epoch 2 Batch 350] loss 2.74
+[Epoch 2 Batch 400] loss 2.74
+[Epoch 2 Batch 450] loss 2.74
+[Epoch 2 Batch 500] loss 2.74
+[Epoch 2 loss 2.74 Train acc 0.138000
+[Epoch 3 Batch 50] loss 2.64
+[Epoch 3 Batch 100] loss 2.65
+[Epoch 3 Batch 150] loss 2.66
+[Epoch 3 Batch 200] loss 2.66
+[Epoch 3 Batch 250] loss 2.70
+[Epoch 3 Batch 300] loss 2.70
+[Epoch 3 Batch 350] loss 2.69
+[Epoch 3 Batch 400] loss 2.70
+[Epoch 3 Batch 450] loss 2.69
+[Epoch 3 Batch 500] loss 505.61
+[Epoch 3 loss 505.61 Train acc 0.166300
+[Epoch 4 Batch 50] loss 40056.45
+[Epoch 4 Batch 100] loss 20031.69
+[Epoch 4 Batch 150] loss 13355.69
+[Epoch 4 Batch 200] loss 10017.42
+[Epoch 4 Batch 250] loss 8014.46
+[Epoch 4 Batch 300] loss 6679.15
+[Epoch 4 Batch 350] loss 6159.68
+[Epoch 4 Batch 400] loss 5390.04
+[Epoch 4 Batch 450] loss 4791.45
+[Epoch 4 Batch 500] loss 4334.31
+[Epoch 4 loss 4334.31 Train acc 0.193400
+[Epoch 5 Batch 50] loss 2.54
+[Epoch 5 Batch 100] loss 2.57
+[Epoch 5 Batch 150] loss 3.78
+[Epoch 5 Batch 200] loss 791.78
+[Epoch 5 Batch 250] loss 633.93
+[Epoch 5 Batch 300] loss 528.71
+[Epoch 5 Batch 350] loss 453.55
+[Epoch 5 Batch 400] loss 397.17
+[Epoch 5 Batch 450] loss 353.33
+[Epoch 5 Batch 500] loss 318.53
+[Epoch 5 loss 318.53 Train acc 0.106600
+[Epoch 6 Batch 50] loss 3814.31
+[Epoch 6 Batch 100] loss 1908.41
+[Epoch 6 Batch 150] loss 1273.12
+[Epoch 6 Batch 200] loss 955.51
+[Epoch 6 Batch 250] loss 764.91
+[Epoch 6 Batch 300] loss 641.35
+[Epoch 6 Batch 350] loss 550.09
+[Epoch 6 Batch 400] loss 481.64
+[Epoch 6 Batch 450] loss 428.41
+[Epoch 6 Batch 500] loss 1841.83
+[Epoch 6 loss 1841.83 Train acc 0.231300
+[Epoch 7 Batch 50] loss 1956499.66
+[Epoch 7 Batch 100] loss 978251.07
+[Epoch 7 Batch 150] loss 652168.97
+[Epoch 7 Batch 200] loss 489127.35
+[Epoch 7 Batch 250] loss 391302.39
+[Epoch 7 Batch 300] loss 326085.73
+[Epoch 7 Batch 350] loss 279502.41
+[Epoch 7 Batch 400] loss 244564.92
+[Epoch 7 Batch 450] loss 217391.31
+[Epoch 7 Batch 500] loss 195652.44
+[Epoch 7 loss 195652.44 Train acc 0.254100
+[Epoch 8 Batch 50] loss 2.44
+[Epoch 8 Batch 100] loss 2.42
+[Epoch 8 Batch 150] loss 2.47
+[Epoch 8 Batch 200] loss 2.45
+[Epoch 8 Batch 250] loss 3.85
+[Epoch 8 Batch 300] loss 3.63
+[Epoch 8 Batch 350] loss 3.46
+[Epoch 8 Batch 400] loss 2771792.38
+[Epoch 8 Batch 450] loss 2463815.72
+[Epoch 8 Batch 500] loss 2217434.39
+[Epoch 8 loss 2217434.39 Train acc 0.173900
+[Epoch 9 Batch 50] loss 30486.78
+[Epoch 9 Batch 100] loss 15244.59
+[Epoch 9 Batch 150] loss 10163.84
+[Epoch 9 Batch 200] loss 7623.48
+[Epoch 9 Batch 250] loss 6099.26
+[Epoch 9 Batch 300] loss 5083.12
+[Epoch 9 Batch 350] loss 4357.30
+[Epoch 9 Batch 400] loss 3812.95
+[Epoch 9 Batch 450] loss 3389.56
+[Epoch 9 Batch 500] loss 3050.85
+[Epoch 9 loss 3050.85 Train acc 0.281700
+[Epoch 10 Batch 50] loss 2.36
+[Epoch 10 Batch 100] loss 2.35
+[Epoch 10 Batch 150] loss 2.34
+[Epoch 10 Batch 200] loss 2.34
+[Epoch 10 Batch 250] loss 2.35
+[Epoch 10 Batch 300] loss 2.35
+[Epoch 10 Batch 350] loss 2.35
+[Epoch 10 Batch 400] loss 2.40
+[Epoch 10 Batch 450] loss 2.40
+[Epoch 10 Batch 500] loss 2.39
+[Epoch 10 loss 2.39 Train acc 0.280000
