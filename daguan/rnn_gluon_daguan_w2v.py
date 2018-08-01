@@ -38,28 +38,19 @@ class RNNModel(gluon.Block):
             self.hidden_dim = hidden_dim
             self.w2v_vec = w2v_vec
 
-    # def get_vec(self,inputs):
-    #     input_vec = []
-    #     for word in enumerate(inputs):
-    #         try:
-    #             input_vec.append(self.w2v_vec.wv[word])
-    #         except:
-    #             input_vec.append(np.random.uniform(-0.25, 0.25, self.w2v_vec.vector_size))
-    #     return mx.nd.array(input_vec).reshape((len(inputs), 1, -1))
-
     def forward(self, inputs, state):
         outputs = []
         for input in inputs:
             input_node = mx.nd.array(input)
             step = input_node.shape[0]
             input_node = input_node.reshape(step, 1, -1)
-            output, state = self.rnn(input_node, state)
+            output, out_state = self.rnn(input_node, state)
             output = self.drop(output)
             output = output[-1]
             outputs.append(output)
         outputs = mx.nd.concat(*outputs, dim=0)
         decoded = self.decoder(outputs)
-        return decoded, state
+        return decoded, out_state
 
     def begin_state(self, *args, **kwargs):
         return self.rnn.begin_state(*args, **kwargs)
@@ -96,13 +87,13 @@ def data_iter(source, target, batch_size):
 
 def get_data_iter(path, batch_size, w2v_vec):
     total_data = pd.read_csv(path)
-    data = total_data["article"][0:100]
+    data = total_data["article"][0:10000]
     f = lambda x: [w2v_vec.wv.get_vector(xi) for xi in x.split(" ")[0:300] if xi not in high_frequency_word_list]
     # f = lambda x: [xi for xi in x.split(" ")[0:800] ]
     #
     data = data.apply(f)
 
-    label = total_data["class"][0:100]
+    label = total_data["class"][0:10000]
 
     # dataset = gdata.ArrayDataset(data, label)
     # data_iter = gdata.DataLoader(dataset, batch_size, shuffle=True)
@@ -141,7 +132,6 @@ def train():
                 cur_L = total_L / batch_num / batch_size
                 # train_acc = evaluate_accuracy(train_data, label, model)
                 print('[Epoch %d Batch %d] loss %.2f' % (epoch + 1, batch_num, cur_L))
-
         cur_L = total_L / len(label)
         train_acc = evaluate_accuracy(train_data, label, model)
         print('[Epoch %d loss %.2f Train acc %f' % (epoch + 1, cur_L, train_acc))
@@ -180,8 +170,8 @@ if __name__ == "__main__":
 
     context = utils.try_gpu()
 
-    train_data_path = "E:\\ML_learning\\Daguan\\data\\train_data.csv"
-    w2v = word2vec.Word2Vec.load("E:\\ML_learning\\Daguan\\data\\mymodel")
+    train_data_path = "D:\\ML_learning\\Daguan\\data\\train_data.csv"
+    w2v = word2vec.Word2Vec.load("D:\\ML_learning\\Daguan\\data\\mymodel")
     # test_data_path = ""
     train_data, label = get_data_iter(train_data_path, batch_size, w2v)
     # train_data_iter = get_data_iter(train_data_path, batch_size, w2v)
