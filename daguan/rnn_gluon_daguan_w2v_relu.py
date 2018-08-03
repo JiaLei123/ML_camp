@@ -96,13 +96,14 @@ def data_iter(source, target, batch_size):
 
 def get_data_iter(path, batch_size, w2v_vec):
     total_data = pd.read_csv(path)
-    data = total_data["article"][0:1000]
-    f = lambda x: [w2v_vec.wv.get_vector(xi) for xi in [si for si in x.split(" ") if si not in high_frequency_word_list][0:500]]
+    data = total_data["article"]
+    f = lambda x: [w2v_vec.wv.get_vector(xi) for xi in
+                   [si for si in x.split(" ") if si not in high_frequency_word_list][0:500]]
     # f = lambda x: [xi for xi in x.split(" ")[0:800] ]
     #
     data = data.apply(f)
 
-    label = total_data["class"][0:1000]
+    label = total_data["class"]
 
     # dataset = gdata.ArrayDataset(data, label)
     # data_iter = gdata.DataLoader(dataset, batch_size, shuffle=True)
@@ -131,8 +132,8 @@ def train():
                 output, hidden = model(X, hidden)
                 L = loss(output, mx.nd.array(y))
                 L.backward()
-            # grads = [i.grad(context) for i in model.collect_params().values()]
-            # gluon.utils.clip_global_norm(grads, clipping_norm * num_steps * batch_size)
+            grads = [i.grad(context) for i in model.collect_params().values()]
+            gluon.utils.clip_global_norm(grads, clipping_norm * num_steps * batch_size)
             trainer.step(batch_size)
             total_L += mx.nd.sum(L).asscalar()
             batch_num += 1
@@ -165,11 +166,11 @@ def evaluate_accuracy(train_data, label, net, ctx=[mx.cpu()]):
 
 
 if __name__ == "__main__":
-    model_name = 'rnn_relu'
+    model_name = 'lstm'
     embed_dim = 100
     hidden_dim = 100
     num_layers = 2
-    lr = 0.5
+    lr = 0.2
     clipping_norm = 0.2
     epochs = 10
     batch_size = 20
@@ -189,7 +190,7 @@ if __name__ == "__main__":
     model = RNNModel(model_name, embed_dim, hidden_dim, num_layers, w2v, dropout_rate)
     model.collect_params().initialize(mx.init.Xavier(), ctx=context)
 
-    trainer = gluon.Trainer(model.collect_params(), 'sgd', {'learning_rate': lr, 'momentum': 0.1, 'wd': 0})
+    trainer = gluon.Trainer(model.collect_params(), 'sgd', {'learning_rate': lr})
     loss = gluon.loss.SoftmaxCrossEntropyLoss()
 
     # model_eval(val_data)
