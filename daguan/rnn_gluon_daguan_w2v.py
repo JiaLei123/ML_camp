@@ -131,8 +131,8 @@ def train():
                 output, hidden = model(X, hidden)
                 L = loss(output, mx.nd.array(y))
                 L.backward()
-            # grads = [i.grad(context) for i in model.collect_params().values()]
-            # gluon.utils.clip_global_norm(grads, clipping_norm * num_steps * batch_size)
+            grads = [i.grad(context) for i in model.collect_params().values()]
+            gluon.utils.clip_global_norm(grads, clipping_norm * num_steps * batch_size)
             trainer.step(batch_size)
             total_L += mx.nd.sum(L).asscalar()
             batch_num += 1
