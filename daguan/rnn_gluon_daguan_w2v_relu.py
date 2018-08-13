@@ -34,7 +34,9 @@ class RNNModel(gluon.Block):
             else:
                 raise ValueError("Invalid Mode")
 
-            self.decoder = nn.Dense(19, in_units=hidden_dim)
+            self.mpl = nn.Dense(4096, activation='relu')
+            self.drop_mpl = nn.Dropout(drop_out)
+            self.decoder = nn.Dense(19)
             self.hidden_dim = hidden_dim
             self.w2v_vec = w2v_vec
 
@@ -58,7 +60,7 @@ class RNNModel(gluon.Block):
             output = output[-1]
             outputs.append(output)
         outputs = mx.nd.concat(*outputs, dim=0)
-        decoded = self.decoder(outputs)
+        decoded = self.decoder(self.drop_mpl(self.mpl(outputs)))
         return decoded, out_state
 
     def begin_state(self, *args, **kwargs):
@@ -141,11 +143,12 @@ def train():
             if batch_num % eval_period == 0 and batch_num > 0:
                 cur_L = total_L / batch_num / batch_size
                 # train_acc = evaluate_accuracy(train_data, label, model)
-                print('[Epoch %d Batch %d] loss %.2f' % (epoch + 1, batch_num, cur_L))
+                print('[Epoch %d Batch %d] loss %f' % (epoch + 1, batch_num, cur_L))
 
         cur_L = total_L / len(label)
         train_acc = evaluate_accuracy(train_data, label, model)
         print('[Epoch %d loss %.2f Train acc %f' % (epoch + 1, cur_L, train_acc))
+        model.save_parameters("E:\\ML_learning\\Daguan\\data\\model.bin")
 
 
 def evaluate_accuracy(train_data, label, net, ctx=[mx.cpu()]):

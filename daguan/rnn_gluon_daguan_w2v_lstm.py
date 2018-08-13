@@ -146,6 +146,8 @@ def train():
         cur_L = total_L / len(label)
         train_acc = evaluate_accuracy(train_data, label, model)
         print('[Epoch %d loss %.2f Train acc %f' % (epoch + 1, cur_L, train_acc))
+        model.save_parameters()
+
 
 
 def evaluate_accuracy(train_data, label, net, ctx=[mx.cpu()]):
@@ -173,7 +175,7 @@ if __name__ == "__main__":
     lr = 0.2
     clipping_norm = 0.2
     epochs = 10
-    batch_size = 20
+    batch_size = 100
     batch_size_clas = 1
     num_steps = 1
     dropout_rate = 0.2
