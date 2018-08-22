@@ -87,13 +87,13 @@ class RNNModel(gluon.Block):
         return self.rnn.begin_state(*args, **kwargs)
 
 
-model_name = 'rnn_relu'
+model_name = 'gru'
 embed_dim = 100
 hidden_dim = 100
 num_layers = 2
-lr = 1
+lr = 0.5
 clipping_norm = 0.2
-epochs = 1
+epochs = 30
 batch_size = 32
 num_steps = 5
 dropout_rate = 0.2
