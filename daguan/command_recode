@@ -1,0 +1,3 @@
+.\fasttext.exe predict .\model.bin test_data_all_word_seg_fastTest.tsv > result.tsv
+.\fasttext.exe supervised -dim 300 -ws 20 -epoch 100 -lr 0.3  -input train_data_word_seg_fastTest.tsv -output model
+.\fasttext.exe test .\model.bin dev_data_word_seg_fastTest.tsv
