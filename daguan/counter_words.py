@@ -25,9 +25,11 @@ def get_high_low_freq_words(data_path, column_name="article", top=10, low=10, sh
 
     topN = top_n(word_counts, top)
 
-    [print("%s\t%d" % (value, count)) for value, count in topN]
+    top_frame = pd.DataFrame(topN, columns=["Word", "Count"])
+    print(top_frame)
+    # [print("%s\t%d" % (value, count)) for value, count in topN]
     if show_plt:
-        plt.bar(range(len(topN)), [x[1] for x in topN], tick_label=[x[0] for x in top10])
+        plt.bar(range(len(topN)), [x[1] for x in topN], tick_label=[x[0] for x in topN])
         plt.show()
 
     return topN, counter_low_freq
@@ -37,5 +39,5 @@ if __name__ == "__main__":
     data_path = "E:\\ML_learning\\Daguan\\data\\train_set.csv"
     base_path = os.path.dirname(data_path)
 
-    topN, counter_low_freq = get_high_low_freq_words(data_path)
-    counter_low_freq.to_csv(os.path.join(base_path, 'low_frequency_words.csv'))
+    topN, counter_low_freq = get_high_low_freq_words(data_path, top=20)
+    # counter_low_freq.to_csv(os.path.join(base_path, 'low_frequency_words.csv'))

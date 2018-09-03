@@ -32,5 +32,5 @@ def generate_test_result(data_path, result_path):
 if __name__ == "__main__":
     data_path = "E:\\ML_learning\\Daguan\\data\\test_set.csv"
     result_path = "E:\\ML_learning\\Daguan\\data\\result.tsv"
-    # parse_data_fastText(data_path)
+    # parse_data_fastText(data_path, column_name="word_seg")
     generate_test_result(data_path, result_path)
