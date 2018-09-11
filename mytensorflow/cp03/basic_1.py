@@ -20,7 +20,8 @@ with tf.Session(graph=g1) as sess:
         print(sess.run(tf.get_variable("v")))
         print(tf.get_collection(tf.GraphKeys.VARIABLES))
 
-with tf.Session(graph=g2) as sess:
+config = tf.ConfigProto(allow_soft_placement=True, log_device_placement=True)
+with tf.Session(graph=g2, config=config) as sess:
     tf.initialize_all_variables().run()
     with tf.variable_scope("", reuse=True):
         print(sess.run(tf.get_variable("v")))
