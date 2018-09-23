@@ -4,11 +4,11 @@ from tensorflow.examples.tutorials.mnist import input_data
 import numpy as np
 import mnist_inference
 
-BATCH_SIZE = 100
-LEARNING_RATE_BASE = 0.8
+BATCH_SIZE = 1000
+LEARNING_RATE_BASE = 0.01
 LEARNING_RATE_DECAY = 0.99
 REGULARIZATION_RATE = 0.0001
-TRAINING_STEP = 30000
+TRAINING_STEPS = 6000
 MOVING_AVERAGE_DECAY = 0.99
 
 MODEL_NAME = "model.ckpt"
@@ -46,7 +46,7 @@ def train(mnist):
 
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
-        for i in range(TRAINING_STEP):
+        for i in range(TRAINING_STEPS):
             xs, ys = mnist.train.next_batch(BATCH_SIZE)
             reshape_xs = np.reshape(xs, (
                 BATCH_SIZE,
@@ -55,7 +55,7 @@ def train(mnist):
                 mnist_inference.NUM_CHANNELS
             ))
             _, loss_value, step = sess.run([train_op, loss, global_step], feed_dict={x: reshape_xs, y_: ys})
-            if i % 1000 == 0:
+            if i % 100 == 0:
                 print("After %d training step(s), loss on train batch is %g" % (i, loss_value))
                 saver.save(sess, os.path.join("model", MODEL_NAME), global_step=global_step)
 

@@ -16,7 +16,7 @@ def evaluate(mnist):
             num_example,
             mnist_inference.IMAGE_SIZE,
             mnist_inference.IMAGE_SIZE,
-            mnist_inference.INPUT_NODE], name="x-input")
+            mnist_inference.NUM_CHANNELS], name="x-input")
         y_ = tf.placeholder(tf.float32, [None, mnist_inference.OUTPUT_NODE], name='y-input')
 
         xs = mnist.validation.images
@@ -27,10 +27,10 @@ def evaluate(mnist):
             mnist_inference.NUM_CHANNELS
         ))
 
-        validate_feed = {x: mnist.validation.images, y_: mnist.validation.labels}
+        validate_feed = {x: reshape_xs, y_: mnist.validation.labels}
         test_feed = {x: mnist.test.images, y_: mnist.test.labels}
 
-        y = mnist_inference.inference(x, None)
+        y = mnist_inference.inference(x, False, None)
 
         correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
