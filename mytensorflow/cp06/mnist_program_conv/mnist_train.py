@@ -55,7 +55,7 @@ def train(mnist):
                 mnist_inference.NUM_CHANNELS
             ))
             _, loss_value, step = sess.run([train_op, loss, global_step], feed_dict={x: reshape_xs, y_: ys})
-            if i % 100 == 0:
+            if i % 1000 == 0:
                 print("After %d training step(s), loss on train batch is %g" % (i, loss_value))
                 saver.save(sess, os.path.join("model", MODEL_NAME), global_step=global_step)
 
