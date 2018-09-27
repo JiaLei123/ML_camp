@@ -102,10 +102,11 @@ def main():
             end = max(start + BATCH, n_training_example)
 
         test_accuracy = sess.run(evaluation_step, feed_dict={
-                    images: testing_images,
-                    labels: testing_labels
-                })
+            images: testing_images,
+            labels: testing_labels
+        })
         print("Final Test accuracy = %f" % test_accuracy)
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     tf.app.run()
