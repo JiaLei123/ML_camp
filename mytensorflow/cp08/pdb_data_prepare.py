@@ -1,4 +1,5 @@
 import sys
+import numpy as np
 
 RAW_DATA = r"E:\ML_learning\tensorFlow\simple-examples\data\ptb.test.txt"
 VOCAB = "ptd.vocab"

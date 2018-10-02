@@ -1,6 +1,7 @@
 import numpy as np
 import tensorflow as tf
 
+
 TRAIN_DATA = r"ptd.train"
 EVAL_DATA = r"ptd.valid"
 TEST_DATA = r"ptd.test"
@@ -41,6 +42,7 @@ class PTBModel(object):
         self.initial_state = cell.zero_state(batch_size, tf.float32)
 
         embedding = tf.get_variable('embedding', [VOCAB_SIZE, HIDDEN_SIZE])
+        # shape of the inputs is 20X35X300
         inputs = tf.nn.embedding_lookup(embedding, self.input_data)
 
         if is_training:
@@ -65,7 +67,7 @@ class PTBModel(object):
 
         loss = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=tf.reshape(self.targets, [-1]),
                                                               logits=logits)
-        self.cost = tf.reduce_mean(loss) / batch_size
+        self.cost = tf.reduce_sum(loss) / batch_size
         self.final_state = state
 
         if not is_training:
@@ -122,7 +124,7 @@ def main():
         train_model = PTBModel(True, TRAIN_BATCH_SIZE, TRAIN_NUM_STEP)
 
     with tf.variable_scope("language_model", reuse=True, initializer=initializer):
-        eval_model = PTBModel(True, TRAIN_BATCH_SIZE, TRAIN_NUM_STEP)
+        eval_model = PTBModel(True, EVAL_BATCH_SIZE, EVAL_NUM_STEP)
 
     with tf.Session() as session:
         session.run(tf.global_variables_initializer())
@@ -140,7 +142,7 @@ def main():
             print("Epoch: %d Eval Perplexity: %f" % (i + 1, eval_pplx))
 
         _, test_pplx = run_epoch(session, eval_model, test_batches, tf.no_op(), False, 0)
-        print("Test Perplexity: %f" % test_batches)
+        print("Test Perplexity: %f" % test_pplx)
 
 
 if __name__ == "__main__":
