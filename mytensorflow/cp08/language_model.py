@@ -58,11 +58,13 @@ class PTBModel(object):
                 outputs.append(cell_output)
         output = tf.reshape(tf.concat(outputs, 1), [-1, HIDDEN_SIZE])
 
+        # 如果共享词向量层和Softmax 层的参数。不仅能大幅减少参数数量，还能提高最终模型效果
         if SHARE_EMB_AND_SOFTMAX:
             weight = tf.transpose(embedding)
         else:
             weight = tf.get_variable("weight", [HIDDEN_SIZE, VOCAB_SIZE])
         bias = tf.get_variable("bias", [VOCAB_SIZE])
+
         logits = tf.matmul(output, weight) + bias
 
         loss = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=tf.reshape(self.targets, [-1]),
@@ -124,7 +126,7 @@ def main():
         train_model = PTBModel(True, TRAIN_BATCH_SIZE, TRAIN_NUM_STEP)
 
     with tf.variable_scope("language_model", reuse=True, initializer=initializer):
-        eval_model = PTBModel(True, EVAL_BATCH_SIZE, EVAL_NUM_STEP)
+        eval_model = PTBModel(False, EVAL_BATCH_SIZE, EVAL_NUM_STEP)
 
     with tf.Session() as session:
         session.run(tf.global_variables_initializer())
