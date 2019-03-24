@@ -6,6 +6,7 @@ LAYER1_NODE = 500
 
 
 def get_weight_variable(shape, regularizer):
+    # 将loss和正则化项一起加入到losses集合，这样在后面可以一起计算
     weights = tf.get_variable("weights", shape, initializer=tf.truncated_normal_initializer(stddev=0.1))
     if regularizer != None:
         tf.add_to_collection("losses", regularizer(weights))
