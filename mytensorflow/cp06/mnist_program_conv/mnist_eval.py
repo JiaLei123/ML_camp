@@ -47,7 +47,7 @@ def evaluate(mnist):
                     global_step = ckpt.model_checkpoint_path.split("\\")[-1].split("-")[-1]
                     accuracy_store = sess.run(accuracy, feed_dict=validate_feed)
                     print("After %s training step(s), validation accuracy using average mode is %g" % (
-                    global_step, accuracy_store))
+                        global_step, accuracy_store))
                 else:
                     print("no checkpoint found")
                     return

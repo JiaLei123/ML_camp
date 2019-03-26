@@ -87,12 +87,34 @@ def get_bottleneck_path(image_lists, label_name, index, category):
 
 
 def run_bottleneck_on_image(sess, image_data, image_data_tensor, bottleneck_tensor):
+    '''
+    使用加载好的训练好的Inception-v3模型(不包含全连接层)处理一张图片，得到这个图片的特征向量
+    :param sess:
+    :param image_data:
+    :param image_data_tensor:
+    :param bottleneck_tensor:
+    :return:
+    '''
+    # 将当前图片作为输入计算瓶颈层张量的值。
+    # bottleneck_tensor 计算节点，这是最重要的，表明要计算到的地方。
     bottleneck_values = sess.run(bottleneck_tensor, {image_data_tensor: image_data})
+    # 将bottleneck_values得到的四维数组压缩成一个一维数据（特征向量）
     bottleneck_value = np.squeeze(bottleneck_values)
     return bottleneck_value
 
 
 def get_or_create_bottleneck(sess, image_lists, label_name, index, category, jpeg_data_tensor, bottleneck_tensor):
+    '''
+    每个图片的特征向量会单独存储为一个文件，所以如果这文件不存在就要使用模型计算出它的特征向量并保存
+    :param sess:
+    :param image_lists:
+    :param label_name:
+    :param index:
+    :param category:
+    :param jpeg_data_tensor:
+    :param bottleneck_tensor:
+    :return:
+    '''
     label_lists = image_lists[label_name]
     sub_dir = label_lists['dir']
     sub_dir_path = os.path.join(CHACH_DIR, sub_dir)
@@ -151,15 +173,20 @@ def get_test_bottlenecks(sess, image_lists, n_classes, jpeg_data_tensor, bottlen
 def main():
     image_lists = create_image_lists(TEST_PERCENTAGE, VALIDATION_PERCENTAGE)
     n_classes = len(image_lists.keys())
+    # 读取已经训练好的Inception-v3模型，这个模型中保存了每个节点取值的计算方法以及变量（参数）的取值。
     with gfile.FastGFile(os.path.join(MODEL_PATH, MODEL_FILE), 'rb') as f:
         graph_def = tf.GraphDef()
         graph_def.ParseFromString(f.read())
 
+    # 加载模型，并返回数据输入所对应的张量以及计算瓶颈层结果所对应的张量
     bottleneck_tensor, jpeg_data_tensor = tf.import_graph_def(graph_def, return_elements=[BOTTLENECK_TENSOR_NAME,
                                                                                           JPEG_DATA_TENSOR_NAME])
+    # 定义新的神经网络全连接层的输入，也就是Inception-v3模型前向传播到达瓶颈层的输出。
     bottleneck_input = tf.placeholder(tf.float32, [None, BOTTLENECK_TENSOR_SIZE], name="BottleneckInputPlaceholder")
+    # 新的label
     ground_truth_input = tf.placeholder(tf.float32, [None, n_classes], name="GroundTruthInput")
 
+    # 新的全连接层用来解决图片分类的问题，
     with tf.name_scope('final_training_ops'):
         weights = tf.Variable(tf.truncated_normal([BOTTLENECK_TENSOR_SIZE, n_classes], stddev=0.001))
         biases = tf.Variable(tf.zeros([n_classes]))
