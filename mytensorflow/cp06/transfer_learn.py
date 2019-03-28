@@ -124,6 +124,7 @@ def get_or_create_bottleneck(sess, image_lists, label_name, index, category, jpe
 
     if not os.path.exists(bottleneck_path):
         image_path = get_image_path(image_lists, INPUT_DATA, label_name, index, category)
+        # 实现对图片的读取，Returns the contents of a file as a string
         image_data = gfile.FastGFile(image_path, 'rb').read()
         bottleneck_values = run_bottleneck_on_image(sess, image_data, jpeg_data_tensor, bottleneck_tensor)
         bottleneck_string = ",".join(str(x) for x in bottleneck_values)
