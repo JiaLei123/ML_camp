@@ -35,16 +35,16 @@ values = dataset.values
 # print(values)
 print(values[:, 1])
 
-
+# 将特征值画图
 # groups = [0, 1, 2, 3, 5, 6, 7]
 # i = 1
 # pyplot.figure()
 # for group in groups:
-# 	pyplot.subplot(len(groups), 1 ,i)
-# 	pyplot.plot(values[: , group])
+# 	pyplot.subplot(len(groups), 1, i)
+# 	pyplot.plot(values[:, group])
 # 	pyplot.title(dataset.columns[group], y=0.5, loc='right')
 # 	i += 1
-# pyplot.show()
+# 	pyplot.show()
 
 
 # 将数据集构建为监督学习问题
@@ -57,5 +57,5 @@ from pandas import concat
 # def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
 
 encoder = LabelEncoder()
-values[:, 4] = encoder.fit_transform(values[:,4])
+values[:, 4] = encoder.fit_transform(values[:, 4])
 print(values[:, 4])
